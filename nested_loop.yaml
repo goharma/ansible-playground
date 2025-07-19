@@ -1,0 +1,19 @@
+- hosts: localhost
+  vars:
+    make:
+      - name: Ford
+        models:
+          - Bronco
+          - Fiesta
+      - name: Toyota
+        models:
+          - Hilux
+          - Carolla
+
+  tasks:
+    - name: Print each make and model
+      debug:
+        msg: "Make: {{ item.0.name }}, Model: {{ item.1 }}"
+      with_subelements:
+        - "{{ make }}"
+        - models  

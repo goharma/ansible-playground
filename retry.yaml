@@ -1,0 +1,20 @@
+- hosts: localhost
+  vars:
+    my_list:
+      - apple
+      - banana
+      - cherry
+    search_word: "banana"
+
+  tasks:
+    ##########################################################
+    # Retrying a command
+    ##########################################################
+    - name: Retrying a command
+      shell: "sleep 3 && ping -c 3 google.com"
+      register: ping_cmd 
+      until: >
+        ping_cmd.stdout_lines | select('search', 'ping statistics') | list | length > 0    
+      changed_when: false # Use this because this task only gathers info
+      retries: 30
+      delay: 10

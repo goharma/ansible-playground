@@ -1,0 +1,26 @@
+- hosts: localhost
+  vars:
+    my_list:
+      - apple
+      - banana
+      - cherry
+    search_word: "banana"
+
+
+
+  tasks:
+    ##########################################################
+    # When to use Mustache
+    # Rule of thumb: Use bare var with when, register, vars and with_items, loop
+    # Use Mustaches for everythign else 
+    ##########################################################
+    - name: Run a command and register the result
+      shell: "echo {{ item }}" 
+      register: echo_result
+      loop: "{{ my_list }}"
+
+    - name: Print each result if it matches search_word
+      debug:
+        msg: "Found {{ search_word }} in output: {{ item.stdout }}"
+      with_items: "{{ echo_result.results }}"
+      when: "'{{ search_word }}' in item.stdout"

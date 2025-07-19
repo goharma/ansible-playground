@@ -1,0 +1,17 @@
+- hosts: localhost
+  
+  tasks:    
+    ##########################################################
+    # TRY/CATCH
+    ##########################################################
+    - block:
+        - name: Try this command
+          shell: "false"
+      rescue:
+        - name: Catch the error
+          debug:
+            msg: "❌ The command failed, but we caught it!"
+      always:
+        - name: Always runs
+          debug:
+            msg: "This runs regardless of success or failure."
