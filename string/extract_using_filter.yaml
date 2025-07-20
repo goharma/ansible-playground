@@ -1,0 +1,91 @@
+- hosts: localhost
+
+  tasks:    
+    ###########################################################################
+    # FROM STDOUT
+    ###########################################################################
+    - name: Get kubeadm tokens
+      become: true
+      become_user: koy
+      shell: ping -c 3 google.com
+      register: ping_cmd
+
+    - name: Extract hostnames using regex_findall
+      set_fact:
+        google_hosts: "{{ ping_cmd.stdout | regex_findall('bytes from ([^ ]+)') }}"
+
+    - name: Print first hostname
+      debug:
+        msg: "{{ google_hosts[0] | default('No hostname found') }}"
+
+
+
+    ###########################################################################
+    # FROM XML FILE
+    ###########################################################################
+    - name: Load and extract in one step
+      set_fact:
+        datasources: "{{ lookup('file', 'data/simple.xml') | regex_findall('<datasource>([^<]+)</datasource>') }}"
+
+    - name: Print datasources
+      debug:
+        msg: "{{ datasources }}"
+
+    ###########################################################################
+    # FROM XML STRING VARIABLE
+    ###########################################################################
+    - name: Set XML string variable
+      set_fact:
+        xml_string: |
+          <root>
+            <datasource>ds1</datasource>
+            <datasource>ds2</datasource>
+            <item>
+              <name>example</name>
+              <value>42</value>
+            </item>
+          </root>
+
+    - name: Extract from string variable using regex_findall
+      set_fact:
+        datasources_from_string: "{{ xml_string | regex_findall('<datasource>([^<]+)</datasource>') }}"
+
+    - name: Print datasources from string
+      debug:
+        msg: "{{ datasources_from_string }}"
+
+    ###########################################################################
+    # XML FROM URL
+    ###########################################################################
+    - name: Fetch XML from URL
+      uri:
+        url: "https://www.w3schools.com/xml/simple.xml"
+        return_content: yes
+      register: url_result
+
+    - name: Extract datasources from URL content
+      set_fact:
+        descriptions_from_url: "{{ url_result.content | regex_findall('<description>([^<]+)</description>') }}"
+
+    - name: Print description from URL
+      debug:
+        msg: "{{ descriptions_from_url }}"
+    
+    ###########################################################################
+    # JSON FROM URL
+    ###########################################################################    
+    - name: Fetch JSON from URL
+      uri:
+        url: "https://jsonplaceholder.typicode.com/users"
+        return_content: yes
+        headers:
+          Accept: "application/json"
+      register: json_result
+
+    - name: Parse JSON and print names
+      set_fact:
+        user_names: "{{ json_result.json | map(attribute='name') | list }}"
+
+    - name: Print user names
+      debug:
+        msg: "{{ user_names }}"

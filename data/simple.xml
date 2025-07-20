@@ -1,0 +1,8 @@
+<root>
+  <datasource>ds1</datasource>
+  <datasource>ds2</datasource>
+  <item>
+    <name>example</name>
+    <value>42</value>
+  </item>
+</root>

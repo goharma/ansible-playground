@@ -1,0 +1,88 @@
+- hosts: all
+  # become: true
+  # become_user: root
+  vars: 
+    # my_var: myVal
+    
+  tasks:
+    # These should be idempotent
+    # block: Try to apply the change 
+    # rescue: Undo the change, clean up or rollback if something failed
+    # always: notify, log or report failure or success
+
+    ##########################################################
+    # Try to apply the change
+    ##########################################################
+    - block:
+        - name: Set the email/log message
+          set_fact:
+            message: "Block Start Message"
+            
+        - name: Set retry values
+          set_fact:
+            retries: 30 
+            delay: 10   # secs 
+
+        ##########################################################
+        # Run a command, 
+        # Retrying 30 times 
+        # Every 10 secs 
+        # Until an output is found
+        ##########################################################
+        - name: Run command
+          shell: "sleep 3 && ping -c 3 google.com" 
+          register: ping_cmd                              
+          changed_when: false # Use this because this task only gathers info
+          retries: "{{ retries }}"         # Retrying 30 times
+          delay: "{{ delay }}"           # Every 10 Secs
+                              # Until output (ping statistics) is found  
+          until: >
+            ping_cmd.stdout_lines | select('search', 'ping statistics') | list | length > 0           
+
+        - name: Extract hostnames using regex_findall
+          set_fact:
+            google_hosts: "{{ ping_cmd.stdout | regex_findall('bytes from ([^ ]+)') }}"
+
+        - name: Do Something with the output          
+          debug:
+            msg: "✅ The command succeeded.  {{ google_hosts }}"
+
+        - name: Set the email/log message
+          set_fact: 
+            message: "✅ The command succeeded.  {{ google_hosts }}"
+
+      
+      ##########################################################
+      # Rollback anything that was changed
+      ##########################################################
+      rescue:
+        - name: Set the email/log message
+          set_fact:
+            message: "❌ The command failed, but we caught it!"
+      ##########################################################
+      # Always run this
+      ##########################################################
+      always:
+        - name: Always runs
+          debug:
+            msg: "This runs regardless of success or failure."
+          notify: send_email
+          changed_when: true # Needed so the handler is invoked
+  
+  # Note: Handlers are only triggered by tasks that can report a change.
+  handlers:
+    - name: log_message
+      debug: 
+        msg: "🔔 Handler was triggered!"
+
+    - name: send_email
+      community.general.mail:
+        host: smtp.ethereal.email
+        port: 587
+        username: "rashad.ziemann@ethereal.email"
+        password: "z5dh9ArkXVPwHVrmCP"
+        to: "koydooley@gmail.com"
+        subject: "Ansible Notification"
+        body: "{{ message }}"
+        from: "rashad.ziemann@ethereal.email"      
+        secure: starttls

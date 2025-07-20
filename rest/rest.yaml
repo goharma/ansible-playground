@@ -1,0 +1,23 @@
+    ###########################################################################
+    # JSON FROM URL
+    ###########################################################################    
+    - name: Fetch JSON from URL
+      uri:
+        url: "https://jsonplaceholder.typicode.com/users"
+        user: 
+        password: 
+        headers:
+          Accept: "application/json"
+        return_content: yes
+        body:
+          
+
+      register: json_result
+
+    - name: Parse JSON and print names
+      set_fact:
+        user_names: "{{ json_result.json | map(attribute='name') | list }}"
+
+    - name: Print user names
+      debug:
+        msg: "{{ user_names }}"
