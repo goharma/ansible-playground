@@ -1,0 +1,259 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	
+	// C:\Users\koydo\AppData\Roaming\Code\User\snippets
+	// Ctrl-Shift-P > Snippets: Configure Snippets > 
+	"Post": {
+		"scope": "yaml,playbook",
+		"prefix": "a_post",
+		"body": [
+			"- name: Create a JIRA issue",
+			"  ansible.builtin.uri:",
+			"    url: https://your.jira.example.com/rest/api/2/issue/",
+			"    user: your_username",
+			"    password: your_pass",
+			"    method: POST",
+			"    body: \"{{ lookup('ansible.builtin.file','issue.json') }}\"",
+			"    force_basic_auth: true",
+			"    status_code: 201",
+			"    body_format: json"
+		] 
+	},	
+	"Get": {
+		"scope": "yaml,playbook",
+		"prefix": "a_get",
+		"body": [
+			"- name: Check that a page returns successfully but fail if the word AWESOME is not in the page contents",
+			"  ansible.builtin.uri:",
+			"    url: http://www.example.com",
+			"    return_content: true",
+			"  register: this",
+			"  failed_when: this is failed or \"'AWESOME' not in this.content\"",
+		] 
+	},
+	"Link": {
+		"scope": "yaml,playbook",
+		"prefix": "a_ln",
+		"body": [
+			"- name: Create a symbolic link",
+			"  ansible.builtin.file:",
+			"    src: /file/to/link/to",
+			"    dest: /path/to/symlink",
+			"    owner: foo",
+			"    group: foo",
+			"    state: link"
+		] 
+	},			
+	"File": {
+		"scope": "yaml,playbook",
+		"prefix": "a_ls",
+		"body": [
+			"- name: Check file",
+			"  file:",
+			"    path: ",
+			"    state: file"
+		]
+	},		
+	"Copy": {
+		"scope": "yaml,playbook",
+		"prefix": "a_cp",
+		"body": [
+			"- name: Copy local file to remote",
+			"  copy:",
+			"    src: ",
+			"    dest: ",
+			"    owner: ",
+			"    group: ",
+			"    mode: 0644"
+		]
+	},	
+	"Debug": {
+		"scope": "yaml,playbook",
+		"prefix": "a_debug",
+		"body": [
+			"- name: Do Something with the output",
+			"  debug:",
+			"    msg: '✅ The command succeeded.'"
+		]
+	},
+	"Insert Task": {
+		"scope": "yaml,playbook",
+		"prefix": "a_- name",
+		"body": [
+			"- name: TASK_NAME",
+			"  module:",
+			"    args: Test"
+		]
+	},
+	"Find item in XML": {
+		"scope": "yaml,playbook",
+		"prefix": "a_xmlf",
+		"body": [
+			"###########################################################################",
+			"# FROM XML FILE",
+			"###########################################################################",
+			"- name: Load and extract in one step",
+			"  set_fact:",
+			"    datasources: \"{{ lookup('file', 'data/simple.xml') | regex_findall('<datasource>([^<]+)</datasource>') }}\"",
+			"",
+			"- name: Print datasources",
+			"  debug:",
+			"    msg: \"{{ datasources }}\""
+		]
+	},
+	"Shell w/ retries, delay, until": {
+		"scope": "yaml,playbook",
+		"prefix": "a_rc",
+		"body": [
+			"- name: Set retry values",
+			"  set_fact:",
+			"    retries: 30",
+			"    delay: 10   # secs",
+			"",
+			"##########################################################",
+			"# Run a command,",
+			"# Retrying 30 times",
+			"# Every 10 secs",
+			"# Until an output is found",
+			"##########################################################",
+			"- name: Run command",
+			"  shell: \"sleep 3 && ping -c 3 google.com\"",
+			"  register: ping_cmd",
+			"  changed_when: false              # Use this because this task only gathers info",
+			"  retries: \"{{ retries }}\"       # Retrying 30 times",
+			"  delay: \"{{ delay }}\"           # Every 10 Secs",
+			"  # Until output (ping statistics) is found",
+			"  until: >",
+			"    ping_cmd.stdout_lines | select('search', 'ping statistics') | list | length > 0"
+		]
+	},
+	"Insert Shell": {
+		"scope": "yaml,playbook",
+		"prefix": "a_sh",
+		"body": [
+			"- name: Get kubeadm tokens",
+			"  become: true",
+			"  become_user: koy",
+			"  shell: ping -c 3 google.com",
+			"  register: ping_cmd"
+		]
+	},
+	"Set Fact": {
+		"scope": "yaml,playbook",
+		"prefix": "a_sf",
+		"body": [
+			"- name: Set Fact",
+			"  set_fact:",
+			"    - fact1: value1",
+			"    - fact2: value2"
+		]
+	},
+	"Insert ansible_playbook": {
+		"scope": "yaml,playbook",
+		"prefix": "a_pb",
+		"body": [
+			"- hosts: all",
+			"  # become: true",
+			"  # become_user: root",
+			"  vars:",
+			"  # my_var: myVal",
+			"",
+			"  tasks:",
+			"    ##########################################################",
+			"    # These should be idempotent",
+			"    #   block:  Try to apply the change",
+			"    #   rescue: Undo the change, clean up or rollback if",
+			"    #           something failed",
+			"    #   always: notify, log or report failure or success",
+			"    ##########################################################",
+			"    - block:",
+			"      ",
+			"      - name: Set the email/log message",
+			"        set_fact:",
+			"          message: \"Block Start Message\"",
+			"",
+			"      - name: Set retry values",
+			"        set_fact:",
+			"          retries: 30",
+			"          delay: 10   # secs",
+			"",
+			"      ##########################################################",
+			"      # Try to apply the change",
+			"      # Retrying 30 times",
+			"      # Every 10 secs",
+			"      # Until an output is found",
+			"      ##########################################################",
+			"      - name: Run command",
+			"        shell: \"sleep 3 && ping -c 3 google.com\"",
+			"        register: ping_cmd",
+			"        changed_when: false # Use this because this task only gathers info",
+			"        retries: \"{{ retries }}\"         # Retrying 30 times",
+			"        delay: \"{{ delay }}\"           # Every 10 Secs",
+			"                            # Until output (ping statistics) is found",
+			"        until: >",
+			"          ping_cmd.stdout_lines | select('search', 'ping statistics') | list | length > 0",
+			"",
+			"      - name: Extract hostnames using regex_findall",
+			"        set_fact:",
+			"          google_hosts: \"{{ ping_cmd.stdout | regex_findall('bytes from ([^ ]+)') }}\"",
+			"",
+			"      - name: Do Something with the output",
+			"        debug:",
+			"          msg: \"✅ The command succeeded.  {{ google_hosts }}\"",
+			"",
+			"      - name: Set the email/log message",
+			"        set_fact:",
+			"          message: \"✅ The command succeeded.  {{ google_hosts }}\"",
+			"",
+			"      ##########################################################",
+			"      # Rollback anything that was changed",
+			"      ##########################################################",
+			"      rescue:",
+			"        - name: Set the email/log message",
+			"          set_fact:",
+			"            message: \"❌ The command failed, but we caught it!\"",
+			"      ##########################################################",
+			"      # Always run this",
+			"      ##########################################################",
+			"      always:",
+			"        - name: Always runs",
+			"          debug:",
+			"            msg: \"This runs regardless of success or failure.\"",
+			"          notify: send_email",
+			"          changed_when: true # Needed so the handler is invoked",
+			"",
+			"      # Note: Handlers are only triggered by tasks that can report a change.",
+			"  handlers:",
+			"   - name: log_message",
+			"     debug:",
+			"       msg: \"🔔 Handler was triggered!\"",
+			"",
+			"   - name: send_email",
+			"     community.general.mail:",
+			"       host: smtp.ethereal.email",
+			"       port: 587",
+			"       username: \"rashad.ziemann@ethereal.email\"",
+			"       password: \"z5dh9ArkXVPwHVrmCP\"",
+			"       to: \"koydooley@gmail.com\"",
+			"       subject: \"Ansible Notification\"",
+			"       body: \"{{ message }}\"",
+			"       from: \"rashad.ziemann@ethereal.email\"",
+			"       secure: starttls"
+		]
+	}
+}
