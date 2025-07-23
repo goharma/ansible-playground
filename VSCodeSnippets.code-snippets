@@ -18,6 +18,19 @@
 	
 	// C:\Users\koydo\AppData\Roaming\Code\User\snippets
 	// Ctrl-Shift-P > Snippets: Configure Snippets > 
+	"Pipe":{
+		"scope": "yaml",
+		"prefix": "a_pipe",
+		"body": [
+			"- name: Pipe",
+			"  set_fact:",
+			"    whoami: \"{{ lookup('pipe', 'whoami') }}\"",
+			"",
+			"- name: 🔍 Lookup Filters & Plugins",
+			"  debug:",
+			"    msg: \"{{ whoami }}\""
+		]
+	},
 	"Post": {
 		"scope": "yaml,playbook",
 		"prefix": "a_post",
@@ -66,7 +79,7 @@
 			"- name: Check file",
 			"  file:",
 			"    path: ",
-			"    state: file"
+			"    state: file",
 		]
 	},		
 	"Copy": {
@@ -96,16 +109,28 @@
 			"",
 			"- name: Done",
 			"  debug:", 
-			"    msg: '✅:'"
+			"    msg: '✅: '"
 		]
 	},
-	"Insert Task": {
+	"Generic Task": {
 		"scope": "yaml,playbook",
-		"prefix": "a_- name",
+		"prefix": ["- name", "-an"],
 		"body": [
 			"- name: TASK_NAME",
 			"  module:",
 			"    args: Test"
+		]
+	},
+	"Loop Task": {
+		"scope": "yaml,playbook",
+		"prefix": ["loop"],
+		"body": [
+			"- name: TASK_NAME",
+			"  module:",
+			"    args: {{ item }}",
+			"  loop: \"{{ loop_var }}\"",
+			"  loop_var: loop_var"
+
 		]
 	},
 	"Find item in XML": {
@@ -205,12 +230,25 @@
 			"          retries: 30",
 			"          delay: 10   # secs",
 			"",
-			"      ##########################################################",
-			"      # Try to apply the change",
-			"      # Retrying 30 times",
-			"      # Every 10 secs",
-			"      # Until an output is found",
-			"      ##########################################################",
+			"##########################################################",
+			"# Simple pipe",
+			"##########################################################",
+			"- name: Pipe",
+			"  set_fact:",
+			"    the_command: \"{{ lookup('pipe', 'ls -l') }}\"",
+			"",			
+			"- name: Print output with newlines",
+			"  debug:",
+			"    msg: \"{{ the_command.splitlines() }}\"",
+			"##########################################################",
+			"# Try to apply the change",
+			"# Retrying 30 times",
+			"# Every 10 secs",
+			"# Until an output is found",
+			"##########################################################",
+			"- name: 🔍 Lookup Filters & Plugins",
+			"  debug:",
+			"    msg: \"{{ whoami }}\"",			
 			"      - name: Run command",
 			"        shell: \"sleep 3 && ping -c 3 google.com\"",
 			"        register: ping_cmd",

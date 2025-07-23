@@ -51,8 +51,29 @@
           - "Select >2: {{ select_list | select('>', 2) | list }}"
           - "Reject <3: {{ select_list | reject('<', 3) | list }}"
           - "Map to string: {{ demo_list | map('string') | list }}"
-          - "Zip: {{ zip_list1 | zip(zip_list2) | list }}"
+          - "Zip: {{ zip_list1 | zip(zip_list2) | list }}"          
+          - "{{ ['foo', 'bar'] | product(['com']) | map('join', '.') | join(',') }}"    # Product
+          - "{{ [1,2,3] | ansible.builtin.permutations | list }}"                       # Permutations
+          - "{{ [1,2,3] | ansible.builtin.combinations(2) | list }}"
+          # Add to list 
+          - "Add to list: {{ demo_list + [5] }}"                                      # Add single item
+          - "Add multiple: {{ demo_list + [5, 6, 7] }}"                               # Add multiple items
+          - "Prepend to list: {{ [0] + demo_list }}"                                  # Add to beginning
+          - "Insert using union: {{ demo_list | union([5]) }}"                        # Add unique items only          
+          # Add to dict
           - "Combine dicts: {{ {'a': 1} | combine({'b': 2}) }}"
+          - "Add to dict: {{ demo_dict | combine({'country': 'USA'}) }}"              # Add single key-value
+          - "Add multiple: {{ demo_dict | combine({'country': 'USA', 'zip': '80202'}) }}" # Add multiple keys
+          - "Merge dicts: {{ demo_dict | combine({'a': 1}, {'b': 2}) }}"              # Merge multiple dicts
+          # Remove from list 
+          - "Remove item: {{ ['one', 'two', 'three'] | difference(['two']) }}"          # Remove 'two'
+          - "Remove item: {{ ['one', 'two', 'three'] | difference(['two', 'three']) }}" # Remove 'two'
+          # Remove from dict
+          - "Remove dict key: {{ demo_dict | dict2items | rejectattr('key', 'equalto', 'name') | items2dict }}" # Remove 'name'
+          - "Remove dict key: {{ demo_dict | dict2items | selectattr('key', '!=', 'name') | items2dict }}"
+          - "Remove dict key: {{ demo_dict | dict2items | rejectattr('key', 'equalto', 'name') | items2dict }}"
+          - "Remove item: {{ demo_dict | combine({'name': omit}) }}" # Remove 'name' Doesn't work
+          
 
     - name: 🔢 Type Conversion & Defaults
       debug:
@@ -71,6 +92,7 @@
           - "Basename: {{ filepath | basename }}"
           - "Dirname: {{ filepath | dirname }}"
           - "Realpath: {{ filepath | realpath }}"
+          - "Realpath: {{ filepath | realpath | split('/') }}"
           - "Splitext: {{ filepath | splitext }}"
           - "Expanduser: {{ '~/.bashrc' | expanduser }}"
 
@@ -98,3 +120,36 @@
         msg:
           - "Mandatory: {{ secure_mode | mandatory }}"
           - "Use omit: {{ '' | default(omit) }}"
+
+    - name: 🔍 Lookup Filters & Plugins
+      debug:
+        msg:
+          - "File lookup: {{ lookup('file', '/etc/hostname') }}"
+          - "Environment var: {{ lookup('env', 'HOME') }}"
+          - "Pipe command: {{ lookup('pipe', 'whoami') }}"
+          - "Random password: {{ lookup('password', '/dev/null length=8') }}"
+          - "First defined: {{ lookup('first_found', ['/tmp/missing', '/etc/passwd']) }}"
+          - "DNS lookup: {{ lookup('dig', 'google.com') }}"
+          # - "Template lookup: {{ lookup('template', 'template.j2') | default('Template not found') }}"
+          - "Sequence: {{ lookup('sequence', 'start=1 end=5 format=%02d') }}"
+
+    - name: Pipe
+      set_fact:
+        whoami: "{{ lookup('pipe', 'ls -l /') }}"
+              
+    - name: 🔍 Lookup Filters & Plugins
+      debug:
+        msg: "{{ whoami.splitlines() }}"
+
+    - name: Search in list 
+      debug:
+        msg:
+          - "In list: {{ 'foo' in ['foo', 'bar', 'baz'] }}"
+          - "Search: {{ 'Ansible' in 'AnsibleDemo' }}" 
+          - "Starts with: {{ 'AnsibleDemo' | regex_search('^Ansible') }}"
+          - "Ends with: {{ 'AnsibleDemo' | regex_search('Demo$') }}"
+          - "Starts With: {{ 'AnsibleDemo' | lower | startswith('ansible') }}" 
+          #- "Ends With: {{ 'AnsibleDemo' | endswith('Demo') }}"
+          #- "Search: {{ 'AnsibleDemo' | search('Demo') != -1 }}"
+
+
