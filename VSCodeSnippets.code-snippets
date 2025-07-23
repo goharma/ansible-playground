@@ -86,9 +86,17 @@
 		"scope": "yaml,playbook",
 		"prefix": "a_debug",
 		"body": [
-			"- name: Do Something with the output",
-			"  debug:",
-			"    msg: '✅ The command succeeded.'"
+			"- name: Error",
+			"  debug:", 
+			"    msg: '🛑: '",
+			"",
+			"- name: Warning",
+			"  debug:", 
+			"    msg: '🟡: '",
+			"",
+			"- name: Done",
+			"  debug:", 
+			"    msg: '✅:'"
 		]
 	},
 	"Insert Task": {
@@ -149,7 +157,12 @@
 			"- name: Get kubeadm tokens",
 			"  become: true",
 			"  become_user: koy",
-			"  shell: ping -c 3 google.com",
+			"  shell: >",
+    		"    openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | \\",
+    		"    openssl rsa -pubin -outform der 2>/dev/null | \\",
+    		"    openssl dgst -sha256 -hex | awk '{print $2}'"			,			
+			"  args:",
+			"    chdir: /tmp # Dir to change to before running command",
 			"  register: ping_cmd"
 		]
 	},

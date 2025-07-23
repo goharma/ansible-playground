@@ -1,0 +1,100 @@
+---
+- name: Comprehensive Ansible Filter Demo
+  hosts: localhost
+  gather_facts: false
+  vars:
+    demo_string: "  Error detected in USB 3.0 port.  "
+    demo_list: [3, 1, 2, 3]
+    demo_dict: {name: "Koy", city: "Denver"}
+    list_of_dicts:
+      - {key: "a", value: 1}
+      - {key: "b", value: 2}
+    nested_list: [[1], [2, 3]]
+    select_list: [1, 2, 3, 4]
+    zip_list1: ['alpha', 'beta']
+    zip_list2: [1, 2]
+    type_string: "42"
+    maybe_undefined: ""
+    secure_mode: true
+    filepath: "/home/koy/.config/settings.conf"
+    date_string: "2025-07-22"
+    ip_address: "192.168.0.1"
+    subnet_input: "192.168.0.1/24"
+
+  tasks:
+
+    - name: 🔤 String Manipulation Filters
+      debug:
+        msg:
+          - "Upper: {{ demo_string | upper }}"
+          - "Lower: {{ demo_string | lower }}"
+          - "Capitalize: {{ demo_string | capitalize }}"
+          - "Title: {{ demo_string | title }}"
+          - "Replace: {{ demo_string | replace('USB 3.0', 'USB-C') }}"
+          - "Trim: {{ demo_string | trim }}"
+          - "Regex Replace: {{ demo_string | regex_replace('USB.*?\\s', 'USB-C ') }}"
+          - "Join: {{ ['WireGuard', 'VPN', 'Ansible'] | join(', ') }}"
+
+    - name: 📋 List & Dictionary Filters
+      debug:
+        msg:
+          - "Sorted: {{ demo_list | sort }}"
+          - "Unique: {{ demo_list | unique }}"
+          - "Flatten: {{ nested_list | flatten }}"
+          - "Length: {{ demo_list | length }}"
+          - "First: {{ demo_list | first }}"
+          - "Last: {{ demo_list | last }}"
+          - "Min: {{ demo_list | min }}"
+          - "Max: {{ demo_list | max }}"
+          - "dict2items: {{ demo_dict | dict2items }}"
+          - "items2dict: {{ list_of_dicts | items2dict }}"
+          - "Select >2: {{ select_list | select('>', 2) | list }}"
+          - "Reject <3: {{ select_list | reject('<', 3) | list }}"
+          - "Map to string: {{ demo_list | map('string') | list }}"
+          - "Zip: {{ zip_list1 | zip(zip_list2) | list }}"
+          - "Combine dicts: {{ {'a': 1} | combine({'b': 2}) }}"
+
+    - name: 🔢 Type Conversion & Defaults
+      debug:
+        msg:
+          - "To int: {{ type_string | int }}"
+          - "To float: {{ type_string | float }}"
+          - "To bool: {{ type_string | bool }}"
+          - "To string: {{ 42 | string }}"
+          - "Default: {{ maybe_undefined | default('Fallback') }}"
+          - "Ternary: {{ secure_mode | ternary('Secure', 'Insecure') }}"
+          - "Type Debug: {{ demo_dict | type_debug }}"
+
+    - name: 📁 Path & File Filters
+      debug:
+        msg:
+          - "Basename: {{ filepath | basename }}"
+          - "Dirname: {{ filepath | dirname }}"
+          - "Realpath: {{ filepath | realpath }}"
+          - "Splitext: {{ filepath | splitext }}"
+          - "Expanduser: {{ '~/.bashrc' | expanduser }}"
+
+    - name: 📅 Date & Time Filters
+      debug:
+        msg:
+          - "Date String: {{ date_string }}"
+          - "Epoch (seconds): {{ lookup('pipe', 'date -d ' ~ date_string ~ ' +%s') | int }}"
+
+    - name: 🔐 Hashing & UUID Filters
+      debug:
+        msg:
+          - "UUID: {{ lookup('pipe', 'uuidgen') }}"
+          - "Password Hash: {{ 'my_secure_pass' | password_hash('sha512') }}"
+          - "Hash (SHA1): {{ 'sample' | hash('sha1') }}"
+
+    - name: 🌐 Network Filters
+      debug:
+        msg:
+          - "Is Private IP: {{ ip_address | ipaddr('private') }}"
+          - "IPv4 Check: {{ ip_address | ipv4 }}"
+
+    - name: 🧪 Debugging & Safety Filters
+      debug:
+        msg:
+          - "Mandatory: {{ secure_mode | mandatory }}"
+          - "Use omit: {{ '' | default(omit) }}"
